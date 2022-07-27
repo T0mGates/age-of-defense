@@ -2,11 +2,21 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Slingshotter : Unit
+public class Ranged : Unit
 {
+    [Header("Ranged Settings")]
+    public float maxProjectileSpeed;
     public GameObject projectile;
     public Transform shootPoint;
+    public int targetsToHit = 1;
 
+    private float currentProjectileSpeed;
+
+    private void Start()
+    {
+        currentProjectileSpeed = maxProjectileSpeed;
+        base.Start();
+    }
     private void Update()
     {
         base.Update();
@@ -24,7 +34,7 @@ public class Slingshotter : Unit
         }
         GameObject proj = Instantiate(projectile, shootPoint.position, Quaternion.identity);
         proj.transform.up = (attacking[0].gameObject.transform.position - transform.position).normalized;
-        proj.GetComponent<Projectile>().speed = currentProjectileSpeed;
+        proj.GetComponent<Projectile>().SetStats(unitTarget, targetsToHit, currentProjectileSpeed, currentAttack, currentHeal, gameObject.tag, gameObject);
     }
 
     public void SwitchTarget(GameObject fromObj, GameObject toObj)

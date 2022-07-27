@@ -5,19 +5,20 @@ using UnityEngine.UI;
 
 public abstract class Unit : MonoBehaviour
 {
+    [Header("Unit Settings")]
     //public
     public AttackType attackType;
     public UnitTarget unitTarget;
     public TargetType targetType;
 
-    public float maxHealth, maxHeal, maxAttack, maxAttackSpeed, maxSpeed, maxProjectileSpeed;
+    public float maxHealth, maxHeal, maxAttack, maxAttackSpeed, maxSpeed;
 
     protected GameObject healthbarUI;
     protected Slider slider;
 
     //private
     protected UnitState state = UnitState.Idle;
-    protected float currentHealth, currentAttack, currentSpeed, currentProjectileSpeed, currentHeal, currentAttackSpeed, attackTimer;
+    protected float currentHealth, currentAttack, currentSpeed, currentHeal, currentAttackSpeed, attackTimer;
 
     protected Vector2 moveTowardsTarget;
     protected GameObject priorityTarget = null;
@@ -26,19 +27,25 @@ public abstract class Unit : MonoBehaviour
     protected List<GameObject> defending = new List<GameObject>();
     protected List<GameObject> aggro = new List<GameObject>();
     protected List<GameObject> aggrodBy = new List<GameObject>();
+
+    private Color originalColor;
+
+    [HideInInspector]
+    public bool canMove = true;
     // Start is called before the first frame update
-    void Start()
+    public void Start()
     {
         gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
         currentHealth = maxHealth;
         currentAttack = maxAttack;
-        currentSpeed = maxSpeed;
-        currentProjectileSpeed = maxProjectileSpeed;
+        currentSpeed = maxSpeed; 
         currentHeal = maxHeal;
         currentAttackSpeed = maxAttackSpeed; 
         healthbarUI = transform.Find("Canvas").gameObject;
         slider = transform.Find("Canvas/Slider").gameObject.GetComponent<Slider>();
         HealthUpdate();
+        originalColor = GetComponent<SpriteRenderer>().color;
+        moveTowardsTarget = gameManager.GetRandomPointOnMap();
     }
 
     // Update is called once per frame
@@ -50,9 +57,35 @@ public abstract class Unit : MonoBehaviour
         }
         else if(state == UnitState.Combat)
         {
-            if(attackTimer < Time.time)
+            if(attacking[0] == null)
             {
-                Attack();
+                state = UnitState.Idle;
+                return;
+            }
+            if (attackType == AttackType.Melee)
+            {
+                if (Vector2.Distance(gameObject.transform.position, attacking[0].transform.position) < 1.3f)
+                {
+                    if (attackTimer < Time.time)
+                    {
+                        Attack();
+                    }
+                }
+                else
+                {
+                    attackTimer = Time.time + currentAttackSpeed;
+                    priorityTarget = attacking[0];
+                    attacking[0].GetComponent<Unit>().RemoveDefending(gameObject);
+                    RemoveAttacking(attacking[0]);
+                    state = UnitState.Moving;
+                }
+            }
+            else
+            {
+                if (attackTimer < Time.time)
+                {
+                    Attack();
+                }
             }
         }
         else if (state == UnitState.Idle)
@@ -83,9 +116,17 @@ public abstract class Unit : MonoBehaviour
         {
             float bestValue = 10000;
             int index = 0;
+            bool hasPrioTarget = false;
+            for(int i = 0; i < aggro.Count; i++)
+            {
+                if(gameObject.tag == aggro[i].gameObject.tag)
+                {
+                    hasPrioTarget = true;
+                }
+            }
             for (int i = 0; i < aggro.Count; i++)
             {
-                if (targetType == TargetType.Closest)
+                if (targetType == TargetType.Closest && (!hasPrioTarget || (hasPrioTarget && gameObject.tag == aggro[i].gameObject.tag)))
                 {
                     float dist = Vector2.Distance(gameObject.transform.position, aggro[i].transform.position);
                     if (dist < bestValue)
@@ -94,7 +135,7 @@ public abstract class Unit : MonoBehaviour
                         index = i;
                     }
                 }
-                else if (targetType == TargetType.LowestMaxHP)
+                else if (targetType == TargetType.LowestMaxHP && (!hasPrioTarget || (hasPrioTarget && gameObject.tag == aggro[i].gameObject.tag)))
                 {
                     float lowHP = aggro[i].GetComponent<Unit>().maxHealth;
                     if (lowHP < bestValue)
@@ -103,7 +144,7 @@ public abstract class Unit : MonoBehaviour
                         index = i;
                     }
                 }
-                else if (targetType == TargetType.LowestPercentHP)
+                else if (targetType == TargetType.LowestPercentHP && (!hasPrioTarget || (hasPrioTarget && gameObject.tag == aggro[i].gameObject.tag)))
                 {
                     float lowHP = aggro[i].GetComponent<Unit>().GetPercentHealth();
                     if (lowHP < bestValue)
@@ -119,18 +160,52 @@ public abstract class Unit : MonoBehaviour
     }
     public void StartMovingTowardsPoint(Vector2 targetPos)
     {
-        moveTowardsTarget = targetPos;
-        if(state != UnitState.Combat)
+        bool defendingMelee = false;
+        if(defending.Count > 0)
         {
+            for(int i = 0; i < defending.Count; i++)
+            {
+                if(defending[i].GetComponent<Unit>().attackType == AttackType.Melee && defending[i].tag != gameObject.tag)
+                {
+                    defendingMelee = true;
+                }
+            }
+        }
+
+        moveTowardsTarget = targetPos;
+        if(state != UnitState.Combat || !defendingMelee)
+        {
+            if (!defendingMelee && state == UnitState.Combat)
+            {
+                attacking[0].GetComponent<Unit>().RemoveDefending(gameObject);
+                RemoveAttacking(attacking[0]);
+            }
             state = UnitState.Moving;
         }
     }
 
     public void StartMovingTowardsObject(GameObject obj)
     {
-        priorityTarget = obj;
-        if (state != UnitState.Combat)
+        bool defendingMelee = false;
+        if (defending.Count > 0)
         {
+            for (int i = 0; i < defending.Count; i++)
+            {
+                if (defending[i].GetComponent<Unit>().attackType == AttackType.Melee && defending[i].tag != gameObject.tag)
+                {
+                    defendingMelee = true;
+                }
+            }
+        }
+
+        priorityTarget = obj;
+        if (state != UnitState.Combat || !defendingMelee)
+        {
+            if(!defendingMelee && state == UnitState.Combat)
+            {
+                attacking[0].GetComponent<Unit>().RemoveDefending(gameObject);
+                RemoveAttacking(attacking[0]);
+            }
             state = UnitState.Moving;
         }
     }
@@ -175,13 +250,19 @@ public abstract class Unit : MonoBehaviour
 
     protected void OnCollisionStay2D(Collision2D collision)
     {
-        if (IsValidTarget(collision.gameObject))
+        if (IsValidTarget(collision.gameObject) || IsOnOtherTeam(collision.gameObject))
         {
             if (state != UnitState.Combat)
             {
                 StartCombat(collision.gameObject);
             }
         }
+    }
+
+    protected bool IsOnOtherTeam(GameObject obj)
+    {
+        return ((obj.tag == "Ally" || obj.tag == "Enemy") &&
+            obj.tag != gameObject.tag);
     }
 
     protected void OnTriggerEnter2D(Collider2D collision)
@@ -261,11 +342,40 @@ public abstract class Unit : MonoBehaviour
         AddAttacking(obj.gameObject);
         obj.gameObject.GetComponent<Unit>().AddDefending(gameObject);
         attackTimer = Time.time + currentAttackSpeed;
+        //if()
     }
 
-    public void TakeDamage(float dmg)
+    private IEnumerator GreenGlow()
     {
-        currentHealth -= dmg;
+        GetComponent<SpriteRenderer>().color = Color.green;
+        yield return new WaitForSeconds(0.12f);
+        GetComponent<SpriteRenderer>().color = originalColor;
+    }
+
+    private IEnumerator RedGlow()
+    {
+        GetComponent<SpriteRenderer>().color = Color.red;
+        yield return new WaitForSeconds(0.12f);
+        GetComponent<SpriteRenderer>().color = originalColor;
+    }
+
+    public void ChangeHealth(float value)
+    {
+        currentHealth += value;
+        if(currentHealth > maxHealth)
+        {
+            currentHealth = maxHealth;
+        }
+        
+        if(value > 0)
+        {
+            StartCoroutine(GreenGlow());
+        }
+        else
+        {
+            StartCoroutine(RedGlow());
+        }
+
         if(currentHealth > 0)
         {
             HealthUpdate();
@@ -280,9 +390,14 @@ public abstract class Unit : MonoBehaviour
         for(int i = 0; i < defending.Count; i++)
         {
             defending[i].GetComponent<Unit>().RemoveAttacking(gameObject);
-            defending[i].GetComponent<Unit>().RemoveDefending(gameObject);
             defending[i].GetComponent<Unit>().SetState(UnitState.Idle);
         }
+
+        for(int i = 0; i < attacking.Count; i++)
+        {
+            attacking[i].GetComponent<Unit>().RemoveDefending(gameObject);
+        }
+
         Destroy(gameObject);
     }
 

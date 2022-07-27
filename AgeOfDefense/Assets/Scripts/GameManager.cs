@@ -10,7 +10,7 @@ public class GameManager : MonoBehaviour
     public GameObject[] enemies;
     private List<GameObject> enemiesArray = new List<GameObject>();
     private List<GameObject> alliesArray = new List<GameObject>();
-    private float minX, maxX, spawnY;
+    private float minX, maxX, spawnY, minY, maxY;
     private LineRenderer line;
     // Start is called before the first frame update
     void Start()
@@ -20,6 +20,8 @@ public class GameManager : MonoBehaviour
         float horizontalExtent = verticalExtent * Screen.width / Screen.height;
         minX = -1 * horizontalExtent;
         maxX = horizontalExtent;
+        minY = -1 * verticalExtent;
+        maxY = verticalExtent;
         spawnY = verticalExtent;
         line = GetComponent<LineRenderer>();
         line.enabled = false;
@@ -105,8 +107,12 @@ public class GameManager : MonoBehaviour
     private void Spawn()
     {
         float randX = Random.Range(minX + 1, maxX - 1);
-        GameObject spawnedEnemy = Instantiate(enemies[0], new Vector3(randX, spawnY, 0), Quaternion.identity);
-        spawnedEnemy.GetComponent<Unit>().StartMovingTowardsPoint(new Vector2(randX, -1 * spawnY));
+        int randEnemy = Random.Range(0, enemies.Length);
+        GameObject spawnedEnemy = Instantiate(enemies[randEnemy], new Vector3(randX, spawnY, 0), Quaternion.identity);
+        if(randEnemy == 0)
+        {
+            spawnedEnemy.GetComponent<Unit>().StartMovingTowardsPoint(new Vector2(randX, -1 * spawnY));
+        }
     }
 
     private GameObject ObjectOnMouse()
@@ -118,5 +124,12 @@ public class GameManager : MonoBehaviour
             return (hit.collider.gameObject);
         }
         return null;
+    }
+
+    public Vector2 GetRandomPointOnMap()
+    {
+        float randX = Random.Range(minX + 1, maxX - 1);
+        float randY = Random.Range(minY + 1, maxY - 1);
+        return new Vector2(randX, randY);
     }
 }

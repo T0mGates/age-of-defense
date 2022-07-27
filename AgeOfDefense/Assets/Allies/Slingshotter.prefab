@@ -340,7 +340,7 @@ GameObject:
   - component: {fileID: 6272301333776920830}
   - component: {fileID: 5737229433166110816}
   - component: {fileID: 5411238927676689592}
-  - component: {fileID: 9000804630978963060}
+  - component: {fileID: 2965633531789599313}
   m_Layer: 0
   m_Name: Slingshotter
   m_TagString: Ally
@@ -469,7 +469,7 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 0.1
---- !u!114 &9000804630978963060
+--- !u!114 &2965633531789599313
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -492,6 +492,7 @@ MonoBehaviour:
   maxProjectileSpeed: 3
   projectile: {fileID: 4179477551361298627, guid: cf952bcb160ee5544acde700907ed34c, type: 3}
   shootPoint: {fileID: 6272301333776920825}
+  targetsToHit: 1
 --- !u!1 &6723965525244184517
 GameObject:
   m_ObjectHideFlags: 0

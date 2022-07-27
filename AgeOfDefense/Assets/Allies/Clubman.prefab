@@ -431,7 +431,7 @@ CircleCollider2D:
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0.0005259514}
   serializedVersion: 2
-  m_Radius: 0.78127575
+  m_Radius: 0.75
 --- !u!50 &5737229433166110816
 Rigidbody2D:
   serializedVersion: 4
@@ -473,8 +473,7 @@ MonoBehaviour:
   maxAttack: 2
   maxAttackSpeed: 1.8
   maxSpeed: 2
-  maxProjectileSpeed: 0
-  ok: 0
+  canMove: 1
 --- !u!58 &5411238927676689592
 CircleCollider2D:
   m_ObjectHideFlags: 0

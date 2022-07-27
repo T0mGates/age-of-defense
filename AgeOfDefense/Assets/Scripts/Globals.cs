@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public enum UnitTarget { Ally, Enemy, Both }
-public enum AttackType { Ranged, Melee, Both }
+public enum AttackType { Ranged, Melee }
 public enum TargetType { LowestPercentHP, Closest, LowestMaxHP }
 public enum UnitState { Combat, Moving, Idle, Aggro }
 
