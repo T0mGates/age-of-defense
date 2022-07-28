@@ -30,19 +30,17 @@ public class Ranged : Unit
         int index = GetTargetIndex();
         if(index != -1)
         {
-            SwitchTarget(attacking[0].gameObject, aggro[index].gameObject);
+            SwitchTarget(attacking.gameObject, aggro[index].gameObject);
         }
         GameObject proj = Instantiate(projectile, shootPoint.position, Quaternion.identity);
-        proj.transform.up = (attacking[0].gameObject.transform.position - transform.position).normalized;
+        proj.transform.up = (attacking.gameObject.transform.position - transform.position).normalized;
         proj.GetComponent<Projectile>().SetStats(unitTarget, targetsToHit, currentProjectileSpeed, currentAttack, currentHeal, gameObject.tag, gameObject);
     }
 
     public void SwitchTarget(GameObject fromObj, GameObject toObj)
     {
-        RemoveAttacking(fromObj.gameObject);
         fromObj.gameObject.GetComponent<Unit>().RemoveDefending(gameObject);
-
-        AddAttacking(toObj.gameObject);
+        attacking = toObj.gameObject;
         toObj.gameObject.GetComponent<Unit>().AddDefending(gameObject);
 
     }

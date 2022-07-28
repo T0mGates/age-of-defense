@@ -23,7 +23,7 @@ public abstract class Unit : MonoBehaviour
     protected Vector2 moveTowardsTarget;
     protected GameObject priorityTarget = null;
     protected GameManager gameManager;
-    protected List<GameObject> attacking = new List<GameObject>();
+    protected GameObject attacking;
     protected List<GameObject> defending = new List<GameObject>();
     protected List<GameObject> aggro = new List<GameObject>();
     protected List<GameObject> aggrodBy = new List<GameObject>();
@@ -57,14 +57,14 @@ public abstract class Unit : MonoBehaviour
         }
         else if(state == UnitState.Combat)
         {
-            if(attacking[0] == null)
+            if(attacking == null)
             {
                 state = UnitState.Idle;
                 return;
             }
             if (attackType == AttackType.Melee)
             {
-                if (Vector2.Distance(gameObject.transform.position, attacking[0].transform.position) < 1.3f)
+                if (Vector2.Distance(gameObject.transform.position, attacking.transform.position) < 1.3f)
                 {
                     if (attackTimer < Time.time)
                     {
@@ -74,9 +74,9 @@ public abstract class Unit : MonoBehaviour
                 else
                 {
                     attackTimer = Time.time + currentAttackSpeed;
-                    priorityTarget = attacking[0];
-                    attacking[0].GetComponent<Unit>().RemoveDefending(gameObject);
-                    RemoveAttacking(attacking[0]);
+                    priorityTarget = attacking;
+                    attacking.GetComponent<Unit>().RemoveDefending(gameObject);
+                    attacking = null;
                     state = UnitState.Moving;
                 }
             }
@@ -105,7 +105,10 @@ public abstract class Unit : MonoBehaviour
             }
             else
             {
-                StartMovingTowardsPoint(moveTowardsTarget);
+                if(moveTowardsTarget != null)
+                {
+                    StartMovingTowardsPoint(moveTowardsTarget);
+                }
             }
         }
     }
@@ -177,11 +180,20 @@ public abstract class Unit : MonoBehaviour
         {
             if (!defendingMelee && state == UnitState.Combat)
             {
-                attacking[0].GetComponent<Unit>().RemoveDefending(gameObject);
-                RemoveAttacking(attacking[0]);
+                attacking.GetComponent<Unit>().RemoveDefending(gameObject);
+                attacking.GetComponent<Unit>().StartCoroutine(attacking.GetComponent<Unit>().CombatEndBuffer());
+                attacking = null;
             }
             state = UnitState.Moving;
+            priorityTarget = null;
         }
+    }
+
+    public IEnumerator CombatEndBuffer()
+    {
+        currentSpeed = 0;
+        yield return new WaitForSeconds(0.2f);
+        currentSpeed = maxSpeed;
     }
 
     public void StartMovingTowardsObject(GameObject obj)
@@ -203,8 +215,9 @@ public abstract class Unit : MonoBehaviour
         {
             if(!defendingMelee && state == UnitState.Combat)
             {
-                attacking[0].GetComponent<Unit>().RemoveDefending(gameObject);
-                RemoveAttacking(attacking[0]);
+                attacking.GetComponent<Unit>().RemoveDefending(gameObject);
+                attacking.GetComponent<Unit>().StartCoroutine(attacking.GetComponent<Unit>().CombatEndBuffer());
+                attacking = null;
             }
             state = UnitState.Moving;
         }
@@ -293,21 +306,7 @@ public abstract class Unit : MonoBehaviour
         defending.Remove(obj);
         if(defending.Count == 0)
         {
-            state = UnitState.Idle;
-        }
-    }
-
-    public void AddAttacking(GameObject obj)
-    {
-        attacking.Add(obj);
-    }
-
-    public void RemoveAttacking(GameObject obj)
-    {
-        attacking.Remove(obj);
-        if(attacking.Count == 0)
-        {
-            state = UnitState.Idle;
+            state = UnitState.Moving;
         }
     }
 
@@ -339,7 +338,7 @@ public abstract class Unit : MonoBehaviour
     public void StartCombat(GameObject obj)
     {
         state = UnitState.Combat;
-        AddAttacking(obj.gameObject);
+        attacking = obj.gameObject;
         obj.gameObject.GetComponent<Unit>().AddDefending(gameObject);
         attackTimer = Time.time + currentAttackSpeed;
         //if()
@@ -371,7 +370,7 @@ public abstract class Unit : MonoBehaviour
         {
             StartCoroutine(GreenGlow());
         }
-        else
+        else if(value < 0)
         {
             StartCoroutine(RedGlow());
         }
@@ -385,19 +384,26 @@ public abstract class Unit : MonoBehaviour
             Die();
         }
     }
+
+    protected void RemoveIfAttacking(GameObject obj)
+    {
+        if(attacking == obj)
+        {
+            attacking = null;
+        }
+    }
     protected void Die()
     {
         for(int i = 0; i < defending.Count; i++)
         {
-            defending[i].GetComponent<Unit>().RemoveAttacking(gameObject);
+            defending[i].GetComponent<Unit>().RemoveIfAttacking(gameObject);
             defending[i].GetComponent<Unit>().SetState(UnitState.Idle);
         }
 
-        for(int i = 0; i < attacking.Count; i++)
+        if(attacking != null)
         {
-            attacking[i].GetComponent<Unit>().RemoveDefending(gameObject);
+            attacking.GetComponent<Unit>().RemoveDefending(gameObject);
         }
-
         Destroy(gameObject);
     }
 

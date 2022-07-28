@@ -8,13 +8,13 @@ public class Melee : Unit
     {
         attackTimer = Time.time + currentAttackSpeed;
         //animation and whatever
-        if(gameObject.tag == attacking[0].gameObject.tag)
+        if(gameObject.tag == attacking.gameObject.tag)
         {
-            attacking[0].GetComponent<Unit>().ChangeHealth(currentHeal);
+            attacking.GetComponent<Unit>().ChangeHealth(currentHeal);
         }
         else
         {
-            attacking[0].GetComponent<Unit>().ChangeHealth(-currentAttack);
+            attacking.GetComponent<Unit>().ChangeHealth(-currentAttack);
         }
     }
 }

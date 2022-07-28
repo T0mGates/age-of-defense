@@ -171,8 +171,8 @@ Canvas:
   m_SortingBucketNormalizedSize: 0
   m_AdditionalShaderChannelsFlag: 0
   m_UpdateRectTransformForStandalone: 0
-  m_SortingLayerID: 0
-  m_SortingOrder: 100
+  m_SortingLayerID: 1771704121
+  m_SortingOrder: 0
   m_TargetDisplay: 0
 --- !u!114 &7985326392891251513
 MonoBehaviour:
@@ -489,6 +489,7 @@ MonoBehaviour:
   maxAttack: 1
   maxAttackSpeed: 2
   maxSpeed: 1
+  canMove: 1
   maxProjectileSpeed: 3
   projectile: {fileID: 4179477551361298627, guid: cf952bcb160ee5544acde700907ed34c, type: 3}
   shootPoint: {fileID: 6272301333776920825}
