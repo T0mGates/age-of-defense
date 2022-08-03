@@ -8,8 +8,6 @@ public class GameManager : MonoBehaviour
     public float spawnInterval = 5;
     private float spawnTimer;
     public GameObject[] enemies;
-    private List<GameObject> enemiesArray = new List<GameObject>();
-    private List<GameObject> alliesArray = new List<GameObject>();
     private float minX, maxX, spawnY, minY, maxY;
     private LineRenderer line;
     // Start is called before the first frame update
@@ -106,12 +104,17 @@ public class GameManager : MonoBehaviour
 
     private void Spawn()
     {
-        float randX = Random.Range(minX + 1, maxX - 1);
+        float randX = Random.Range(minX + 0.5f, maxX - 0.5f);
         int randEnemy = Random.Range(0, enemies.Length);
-        GameObject spawnedEnemy = Instantiate(enemies[randEnemy], new Vector3(randX, spawnY, 0), Quaternion.identity);
-        if(randEnemy == 0)
+        GameObject spawnedEnemy = Instantiate(enemies[randEnemy], new Vector3(randX, spawnY + 0.5f, 0), Quaternion.identity);
+        if(spawnedEnemy.GetComponent<Unit>().attackType == AttackType.Ranged)
         {
-            spawnedEnemy.GetComponent<Unit>().StartMovingTowardsPoint(new Vector2(randX, -1 * spawnY));
+            spawnedEnemy.GetComponent<Unit>().StartCoroutine(spawnedEnemy.GetComponent<Unit>().EnemyAIMovement(minX + 0.5f, maxX - 0.5f, spawnY * 0.617f, spawnY * 0.875f));
+        }
+        else
+        {
+            spawnedEnemy.GetComponent<Unit>().StartCoroutine(spawnedEnemy.GetComponent<Unit>().EnemyAIMovement(minX + 0.5f, maxX - 0.5f, -spawnY, -spawnY));
+
         }
     }
 

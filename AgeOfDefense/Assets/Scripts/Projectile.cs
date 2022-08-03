@@ -37,7 +37,8 @@ public class Projectile : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if((collision.gameObject.tag == unitTarget.ToString() || 
+        if((collision.gameObject.tag == unitTarget.ToString() ||
+            (collision.gameObject.tag == "Building" && (ownerTag == "Enemy" && attack > 0)) ||
             ((collision.gameObject.tag == "Ally" || 
             collision.gameObject.tag == "Enemy") && 
             unitTarget == UnitTarget.Both)) && 
@@ -51,7 +52,14 @@ public class Projectile : MonoBehaviour
             }
             else
             {
-                collision.GetComponent<Unit>().ChangeHealth(-attack);
+                if(collision.gameObject.tag != "Building")
+                {
+                    collision.GetComponent<Unit>().ChangeHealth(-attack, false, gameObject);
+                }
+                else
+                {
+                    collision.GetComponent<Building>().ChangeHealth(-attack);
+                }
             }
             if(hitCounter == targetsToHit)
             {

@@ -30,7 +30,22 @@ public class Ranged : Unit
         int index = GetTargetIndex();
         if(index != -1)
         {
-            SwitchTarget(attacking.gameObject, aggro[index].gameObject);
+            if(attacking != null)
+            {
+                SwitchTarget(attacking.gameObject, aggro[index].gameObject);
+            }
+            else
+            {
+                attacking = aggro[index].gameObject;
+                if (aggro[index].gameObject.tag != "Building")
+                {
+                    aggro[index].gameObject.GetComponent<Unit>().AddDefending(gameObject);
+                }
+                else
+                {
+                    aggro[index].gameObject.GetComponent<Building>().AddDefending(gameObject);
+                }
+            }
         }
         GameObject proj = Instantiate(projectile, shootPoint.position, Quaternion.identity);
         proj.transform.up = (attacking.gameObject.transform.position - transform.position).normalized;
@@ -39,9 +54,23 @@ public class Ranged : Unit
 
     public void SwitchTarget(GameObject fromObj, GameObject toObj)
     {
-        fromObj.gameObject.GetComponent<Unit>().RemoveDefending(gameObject);
+        if (fromObj.gameObject.tag != "Building")
+        {
+            fromObj.gameObject.GetComponent<Unit>().RemoveDefending(gameObject);
+        }
+        else
+        {
+            fromObj.gameObject.GetComponent<Building>().RemoveDefending(gameObject);
+        }
         attacking = toObj.gameObject;
-        toObj.gameObject.GetComponent<Unit>().AddDefending(gameObject);
+        if(toObj.gameObject.tag != "Building")
+        {
+            toObj.gameObject.GetComponent<Unit>().AddDefending(gameObject);
+        }
+        else
+        {
+            toObj.gameObject.GetComponent<Building>().AddDefending(gameObject);
+        }
 
     }
 

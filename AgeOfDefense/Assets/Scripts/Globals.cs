@@ -4,7 +4,7 @@ using UnityEngine;
 
 public enum UnitTarget { Ally, Enemy, Both }
 public enum AttackType { Ranged, Melee }
-public enum TargetType { LowestPercentHP, Closest, LowestMaxHP }
+public enum TargetType { LowestPercentHP, Closest, LowestMaxHP, Building }
 public enum UnitState { Combat, Moving, Idle, Aggro }
 
 public class Globals

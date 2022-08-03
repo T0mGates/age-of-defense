@@ -14,7 +14,14 @@ public class Melee : Unit
         }
         else
         {
-            attacking.GetComponent<Unit>().ChangeHealth(-currentAttack);
+            if(attacking.gameObject.tag != "Building")
+            {
+                attacking.GetComponent<Unit>().ChangeHealth(-currentAttack, false, gameObject);
+            }
+            else
+            {
+                attacking.GetComponent<Building>().ChangeHealth(-currentAttack);
+            }
         }
     }
 }

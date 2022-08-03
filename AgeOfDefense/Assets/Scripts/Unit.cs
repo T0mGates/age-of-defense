@@ -11,15 +11,14 @@ public abstract class Unit : MonoBehaviour
     public UnitTarget unitTarget;
     public TargetType targetType;
 
-    public float maxHealth, maxHeal, maxAttack, maxAttackSpeed, maxSpeed;
+    public float maxHealth, maxHeal, maxAttack, maxAttackSpeed, maxSpeed, maxArmor;
 
     protected GameObject healthbarUI;
     protected Slider slider;
 
     //private
     protected UnitState state = UnitState.Idle;
-    protected float currentHealth, currentAttack, currentSpeed, currentHeal, currentAttackSpeed, attackTimer;
-
+    protected float currentHealth, currentAttack, currentSpeed, currentHeal, currentAttackSpeed, attackTimer, currentArmor;
     protected Vector2 moveTowardsTarget;
     protected GameObject priorityTarget = null;
     protected GameManager gameManager;
@@ -27,7 +26,7 @@ public abstract class Unit : MonoBehaviour
     protected List<GameObject> defending = new List<GameObject>();
     protected List<GameObject> aggro = new List<GameObject>();
     protected List<GameObject> aggrodBy = new List<GameObject>();
-
+    public float moveInterval = 5;
     private Color originalColor;
 
     [HideInInspector]
@@ -40,7 +39,8 @@ public abstract class Unit : MonoBehaviour
         currentAttack = maxAttack;
         currentSpeed = maxSpeed; 
         currentHeal = maxHeal;
-        currentAttackSpeed = maxAttackSpeed; 
+        currentAttackSpeed = maxAttackSpeed;
+        currentArmor = maxArmor;
         healthbarUI = transform.Find("Canvas").gameObject;
         slider = transform.Find("Canvas/Slider").gameObject.GetComponent<Slider>();
         HealthUpdate();
@@ -64,7 +64,7 @@ public abstract class Unit : MonoBehaviour
             }
             if (attackType == AttackType.Melee)
             {
-                if (Vector2.Distance(gameObject.transform.position, attacking.transform.position) < 1.3f)
+                if (Vector2.Distance(gameObject.transform.position, attacking.transform.position) < 1.3f || attacking.gameObject.tag == "Building")
                 {
                     if (attackTimer < Time.time)
                     {
@@ -75,7 +75,14 @@ public abstract class Unit : MonoBehaviour
                 {
                     attackTimer = Time.time + currentAttackSpeed;
                     priorityTarget = attacking;
-                    attacking.GetComponent<Unit>().RemoveDefending(gameObject);
+                    if (attacking.gameObject.tag != "Building")
+                    {
+                        attacking.GetComponent<Unit>().RemoveDefending(gameObject);
+                    }
+                    else
+                    {
+                        attacking.GetComponent<Building>().RemoveDefending(gameObject);
+                    }
                     attacking = null;
                     state = UnitState.Moving;
                 }
@@ -94,13 +101,16 @@ public abstract class Unit : MonoBehaviour
             if(aggro.Count > 0)
             {
                 int index = GetTargetIndex();
-                if(attackType == AttackType.Ranged)
+                if(aggro[index] != null)
                 {
-                    StartCombat(aggro[index]);
-                }
-                else if(attackType == AttackType.Melee)
-                {
-                    StartMovingTowardsObject(aggro[index]);
+                    if (attackType == AttackType.Ranged)
+                    {
+                        StartCombat(aggro[index]);
+                    }
+                    else if (attackType == AttackType.Melee)
+                    {
+                        StartMovingTowardsObject(aggro[index]);
+                    }
                 }
             }
             else
@@ -113,6 +123,24 @@ public abstract class Unit : MonoBehaviour
         }
     }
 
+    public IEnumerator EnemyAIMovement(float minX, float maxX, float minY, float maxY)
+    {
+        float randAdd = Random.Range(0, 1.1f);
+        float randX = Random.Range(minX, maxX);
+        if(attackType == AttackType.Ranged)
+        {
+            randX = Mathf.Clamp(Random.Range(transform.position.x - 0.75f, transform.position.x + 0.75f), minX, maxX);
+        }
+        float randY = minY;
+        if(minY != maxY)
+        {
+            randY = Random.Range(minY, maxY);
+        }
+        StartMovingTowardsPoint(new Vector2(randX, randY));
+        yield return new WaitForSeconds(moveInterval + randAdd);
+        StartCoroutine(EnemyAIMovement(minX, maxX, minY, maxY));
+    }
+
     protected int GetTargetIndex()
     {
         if(aggro.Count > 0)
@@ -122,7 +150,7 @@ public abstract class Unit : MonoBehaviour
             bool hasPrioTarget = false;
             for(int i = 0; i < aggro.Count; i++)
             {
-                if(gameObject.tag == aggro[i].gameObject.tag)
+                if(gameObject.tag == aggro[i].gameObject.tag || (aggro[i].gameObject.tag == "Building" && targetType == TargetType.Building))
                 {
                     hasPrioTarget = true;
                 }
@@ -138,9 +166,41 @@ public abstract class Unit : MonoBehaviour
                         index = i;
                     }
                 }
+                else if (targetType == TargetType.Building)
+                {
+                    if (hasPrioTarget)
+                    {
+                        if(aggro[i].gameObject.tag == "Building"){
+                            float dist = Vector2.Distance(gameObject.transform.position, aggro[i].transform.position);
+                            if (dist < bestValue)
+                            {
+                                bestValue = dist;
+                                index = i;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        float dist = Vector2.Distance(gameObject.transform.position, aggro[i].transform.position);
+                        if (dist < bestValue)
+                        {
+                            bestValue = dist;
+                            index = i;
+                        }
+                    }
+                }
                 else if (targetType == TargetType.LowestMaxHP && (!hasPrioTarget || (hasPrioTarget && gameObject.tag == aggro[i].gameObject.tag)))
                 {
-                    float lowHP = aggro[i].GetComponent<Unit>().maxHealth;
+
+                    float lowHP = 100000;
+                    if (aggro[i].gameObject.tag != "Building")
+                    {
+                        lowHP = aggro[i].GetComponent<Unit>().maxHealth;
+                    }
+                    else
+                    {
+                        lowHP = aggro[i].GetComponent<Building>().maxHealth;
+                    }
                     if (lowHP < bestValue)
                     {
                         bestValue = lowHP;
@@ -149,7 +209,15 @@ public abstract class Unit : MonoBehaviour
                 }
                 else if (targetType == TargetType.LowestPercentHP && (!hasPrioTarget || (hasPrioTarget && gameObject.tag == aggro[i].gameObject.tag)))
                 {
-                    float lowHP = aggro[i].GetComponent<Unit>().GetPercentHealth();
+                    float lowHP = 100000;
+                    if (aggro[i].gameObject.tag != "Building")
+                    {
+                        lowHP = aggro[i].GetComponent<Unit>().GetPercentHealth();
+                    }
+                    else
+                    {
+                        lowHP = aggro[i].GetComponent<Building>().GetPercentHealth();
+                    }
                     if (lowHP < bestValue)
                     {
                         bestValue = lowHP;
@@ -168,9 +236,12 @@ public abstract class Unit : MonoBehaviour
         {
             for(int i = 0; i < defending.Count; i++)
             {
-                if(defending[i].GetComponent<Unit>().attackType == AttackType.Melee && defending[i].tag != gameObject.tag)
+                if(defending[i] != null)
                 {
-                    defendingMelee = true;
+                    if (defending[i].GetComponent<Unit>().attackType == AttackType.Melee && defending[i].tag != gameObject.tag)
+                    {
+                        defendingMelee = true;
+                    }
                 }
             }
         }
@@ -180,8 +251,15 @@ public abstract class Unit : MonoBehaviour
         {
             if (!defendingMelee && state == UnitState.Combat)
             {
-                attacking.GetComponent<Unit>().RemoveDefending(gameObject);
-                attacking.GetComponent<Unit>().StartCoroutine(attacking.GetComponent<Unit>().CombatEndBuffer());
+                if (attacking.gameObject.tag != "Building")
+                {
+                    attacking.GetComponent<Unit>().RemoveDefending(gameObject);
+                    attacking.GetComponent<Unit>().StartCoroutine(attacking.GetComponent<Unit>().CombatEndBuffer());
+                }
+                else
+                {
+                    attacking.GetComponent<Building>().RemoveDefending(gameObject);
+                }
                 attacking = null;
             }
             state = UnitState.Moving;
@@ -203,9 +281,12 @@ public abstract class Unit : MonoBehaviour
         {
             for (int i = 0; i < defending.Count; i++)
             {
-                if (defending[i].GetComponent<Unit>().attackType == AttackType.Melee && defending[i].tag != gameObject.tag)
+                if(defending[i] != null)
                 {
-                    defendingMelee = true;
+                    if (defending[i].GetComponent<Unit>().attackType == AttackType.Melee && defending[i].tag != gameObject.tag)
+                    {
+                        defendingMelee = true;
+                    }
                 }
             }
         }
@@ -215,8 +296,15 @@ public abstract class Unit : MonoBehaviour
         {
             if(!defendingMelee && state == UnitState.Combat)
             {
-                attacking.GetComponent<Unit>().RemoveDefending(gameObject);
-                attacking.GetComponent<Unit>().StartCoroutine(attacking.GetComponent<Unit>().CombatEndBuffer());
+                if (attacking.gameObject.tag != "Building")
+                {
+                    attacking.GetComponent<Unit>().RemoveDefending(gameObject);
+                    attacking.GetComponent<Unit>().StartCoroutine(attacking.GetComponent<Unit>().CombatEndBuffer());
+                }
+                else
+                {
+                    attacking.GetComponent<Building>().RemoveDefending(gameObject);
+                }
                 attacking = null;
             }
             state = UnitState.Moving;
@@ -275,7 +363,8 @@ public abstract class Unit : MonoBehaviour
     protected bool IsOnOtherTeam(GameObject obj)
     {
         return ((obj.tag == "Ally" || obj.tag == "Enemy") &&
-            obj.tag != gameObject.tag);
+            obj.tag != gameObject.tag &&
+            (gameObject.tag == "Enemy" && obj.gameObject.tag == "Building"));
     }
 
     protected void OnTriggerEnter2D(Collider2D collision)
@@ -283,7 +372,14 @@ public abstract class Unit : MonoBehaviour
         if (IsValidTarget(collision.gameObject) && !collision.isTrigger)
         {
             AddAggro(collision.gameObject);
-            collision.gameObject.GetComponent<Unit>().AddAggrodBy(gameObject);
+            if(collision.gameObject.tag != "Building")
+            {
+                collision.gameObject.GetComponent<Unit>().AddAggrodBy(gameObject);
+            }
+            else
+            {
+                collision.gameObject.GetComponent<Building>().AddAggrodBy(gameObject);
+            }
         }
     }
 
@@ -292,7 +388,14 @@ public abstract class Unit : MonoBehaviour
         if (IsValidTarget(collision.gameObject) && !collision.isTrigger)
         {
             RemoveAggro(collision.gameObject);
-            collision.gameObject.GetComponent<Unit>().RemoveAggrodBy(gameObject);
+            if (collision.gameObject.tag != "Building")
+            {
+                collision.gameObject.GetComponent<Unit>().RemoveAggrodBy(gameObject);
+            }
+            else
+            {
+                collision.gameObject.GetComponent<Building>().RemoveAggrodBy(gameObject);
+            }
         }
     }
 
@@ -332,14 +435,23 @@ public abstract class Unit : MonoBehaviour
 
     public bool IsValidTarget(GameObject obj)
     {
-        return (obj.gameObject.tag == unitTarget.ToString() || ((obj.gameObject.tag == "Ally" || obj.gameObject.tag == "Enemy") && unitTarget == UnitTarget.Both));
+        return (obj.gameObject.tag == unitTarget.ToString() || 
+            ((obj.gameObject.tag == "Ally" || obj.gameObject.tag == "Enemy") && unitTarget == UnitTarget.Both) ||
+            (gameObject.tag == "Enemy" && obj.gameObject.tag == "Building"));
     }
 
     public void StartCombat(GameObject obj)
     {
         state = UnitState.Combat;
         attacking = obj.gameObject;
-        obj.gameObject.GetComponent<Unit>().AddDefending(gameObject);
+        if (obj.gameObject.tag != "Building")
+        {
+            obj.gameObject.GetComponent<Unit>().AddDefending(gameObject);
+        }
+        else
+        {
+            obj.gameObject.GetComponent<Building>().AddDefending(gameObject);
+        }
         attackTimer = Time.time + currentAttackSpeed;
         //if()
     }
@@ -358,8 +470,16 @@ public abstract class Unit : MonoBehaviour
         GetComponent<SpriteRenderer>().color = originalColor;
     }
 
-    public void ChangeHealth(float value)
+    public void ChangeHealth(float value, bool piercing = false, GameObject obj = null)
     {
+        if(value < 0)
+        {
+            value += currentArmor;
+            if(value > 0)
+            {
+                value = 0;
+            }
+        }
         currentHealth += value;
         if(currentHealth > maxHealth)
         {
@@ -372,6 +492,7 @@ public abstract class Unit : MonoBehaviour
         }
         else if(value < 0)
         {
+            Debug.Log(gameObject + " took " + value + " dmg from " + obj.gameObject);
             StartCoroutine(RedGlow());
         }
 
@@ -385,7 +506,7 @@ public abstract class Unit : MonoBehaviour
         }
     }
 
-    protected void RemoveIfAttacking(GameObject obj)
+    public void RemoveIfAttacking(GameObject obj)
     {
         if(attacking == obj)
         {
@@ -396,13 +517,27 @@ public abstract class Unit : MonoBehaviour
     {
         for(int i = 0; i < defending.Count; i++)
         {
-            defending[i].GetComponent<Unit>().RemoveIfAttacking(gameObject);
-            defending[i].GetComponent<Unit>().SetState(UnitState.Idle);
+            if(defending[i] != null)
+            {
+                defending[i].GetComponent<Unit>().RemoveIfAttacking(gameObject);
+                defending[i].GetComponent<Unit>().SetState(UnitState.Idle);
+            }
         }
 
+        for(int i = 0; i < aggrodBy.Count; i++)
+        {
+            aggrodBy[i].GetComponent<Unit>().RemoveAggro(gameObject);
+        }
         if(attacking != null)
         {
-            attacking.GetComponent<Unit>().RemoveDefending(gameObject);
+            if (attacking.gameObject.tag != "Building")
+            {
+                attacking.GetComponent<Unit>().RemoveDefending(gameObject);
+            }
+            else
+            {
+                attacking.GetComponent<Building>().RemoveDefending(gameObject);
+            }
         }
         Destroy(gameObject);
     }
