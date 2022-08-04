@@ -11,6 +11,7 @@ public class PrehistoricManager : MonoBehaviour
 
     void Start()
     {
+        ChangeCoins(0);
     }
 
     // Update is called once per frame
@@ -29,4 +30,6 @@ public class PrehistoricManager : MonoBehaviour
         wood += change;
         woodTxt.text = "Wood: " + wood;
     }
+
+    public int GetCoins() { return coins; }
 }

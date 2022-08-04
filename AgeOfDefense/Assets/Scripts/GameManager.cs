@@ -10,6 +10,7 @@ public class GameManager : MonoBehaviour
     public GameObject[] enemies;
     private float minX, maxX, spawnY, minY, maxY;
     private LineRenderer line;
+    private GameObject shownButtonsBuilding = null;
     // Start is called before the first frame update
     void Start()
     {
@@ -51,7 +52,17 @@ public class GameManager : MonoBehaviour
                     mouseClicking = clickedObj;
                     StartLine(mouseClicking.transform.position);
                 }
+                else if(clickedObj.tag == "Building")
+                {
+                    if(shownButtonsBuilding != null)
+                    {
+                        shownButtonsBuilding.GetComponent<Building>().ShowButtons(false);
+                    }
+                    clickedObj.GetComponent<Building>().ShowButtons(true);
+                    shownButtonsBuilding = clickedObj;
+                }
             }
+            CheckForBuildingButtons(Camera.main.ScreenToWorldPoint(Input.mousePosition));
         }
         if (Input.GetMouseButtonUp(0))
         {
@@ -79,6 +90,19 @@ public class GameManager : MonoBehaviour
                         mouseClicking = null;
                     }
                 }
+            }
+        }
+    }
+
+
+    private void CheckForBuildingButtons(Vector2 pos)
+    {
+        if(shownButtonsBuilding != null)
+        {
+            if (Vector2.Distance(shownButtonsBuilding.transform.position, pos) > 3)
+            {
+                shownButtonsBuilding.GetComponent<Building>().ShowButtons(false);
+                shownButtonsBuilding = null;
             }
         }
     }

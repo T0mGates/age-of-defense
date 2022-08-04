@@ -45,7 +45,6 @@ public abstract class Unit : MonoBehaviour
         slider = transform.Find("Canvas/Slider").gameObject.GetComponent<Slider>();
         HealthUpdate();
         originalColor = GetComponent<SpriteRenderer>().color;
-        moveTowardsTarget = gameManager.GetRandomPointOnMap();
     }
 
     // Update is called once per frame
@@ -115,7 +114,7 @@ public abstract class Unit : MonoBehaviour
             }
             else
             {
-                if(moveTowardsTarget != null)
+                if(moveTowardsTarget != null && (moveTowardsTarget.x != transform.position.x || moveTowardsTarget.y != transform.position.y))
                 {
                     StartMovingTowardsPoint(moveTowardsTarget);
                 }
@@ -492,7 +491,6 @@ public abstract class Unit : MonoBehaviour
         }
         else if(value < 0)
         {
-            Debug.Log(gameObject + " took " + value + " dmg from " + obj.gameObject);
             StartCoroutine(RedGlow());
         }
 

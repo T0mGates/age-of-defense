@@ -11,10 +11,13 @@ public class Building : MonoBehaviour
     protected List<GameObject> defending = new List<GameObject>();
     protected List<GameObject> aggrodBy = new List<GameObject>();
     private Color originalColor;
+    protected GameObject buttons;
     public void Start()
     {
         originalColor = GetComponent<SpriteRenderer>().color;
         slider = transform.Find("Canvas/Slider").gameObject.GetComponent<Slider>();
+        buttons = transform.Find("Canvas/Buttons").gameObject;
+        buttons.SetActive(false);
         currentHealth = maxHealth;
         ChangeHealth(0);
     }
@@ -96,4 +99,9 @@ public class Building : MonoBehaviour
     }
 
     public float GetPercentHealth() { return currentHealth / maxHealth; }
+
+    public void ShowButtons(bool value)
+    {
+        buttons.SetActive(value);
+    }
 }
