@@ -473,6 +473,8 @@ MonoBehaviour:
   maxAttack: 2
   maxAttackSpeed: 1.8
   maxSpeed: 2
+  maxArmor: 0
+  moveInterval: 5
   canMove: 1
 --- !u!58 &5411238927676689592
 CircleCollider2D:
@@ -573,7 +575,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 0}
   m_FillRect: {fileID: 6492462852051305279}
   m_HandleRect: {fileID: 0}
-  m_Direction: 1
+  m_Direction: 0
   m_MinValue: 0
   m_MaxValue: 1
   m_WholeNumbers: 0

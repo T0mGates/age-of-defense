@@ -7,6 +7,8 @@ public enum AttackType { Ranged, Melee }
 public enum TargetType { LowestPercentHP, Closest, LowestMaxHP, Building }
 public enum UnitState { Combat, Moving, Idle, Aggro }
 
+public enum Resource { Wood, Coin }
+
 public class Globals
 {
     // Start is called before the first frame update

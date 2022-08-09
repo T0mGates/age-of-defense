@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class GameManager : MonoBehaviour
 {
@@ -11,10 +12,16 @@ public class GameManager : MonoBehaviour
     private float minX, maxX, spawnY, minY, maxY;
     private LineRenderer line;
     private GameObject shownButtonsBuilding = null;
+    public TextMeshProUGUI gameTimeTxt;
+    private int minutes = 0, seconds= 0;
+    private string minutesString, secondsString;
+    private bool running = true;
+
     // Start is called before the first frame update
     void Start()
     {
         ResetTimer();
+        StartCoroutine(StartGameTime());
         float verticalExtent = Camera.main.orthographicSize;
         float horizontalExtent = verticalExtent * Screen.width / Screen.height;
         minX = -1 * horizontalExtent;
@@ -94,6 +101,44 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    private IEnumerator StartGameTime()
+    {
+        while (running)
+        {
+            secondsString = seconds.ToString();
+            minutesString = minutes.ToString();
+
+            if (seconds < 10)
+            {
+                secondsString = "0" + seconds.ToString();
+            }
+            if (minutes < 10)
+            {
+                minutesString = "0" + minutes.ToString();
+            }
+
+            seconds++;
+            if (seconds == 60)
+            {
+                minutes++;
+                seconds = 0;
+            }
+
+            gameTimeTxt.text = minutesString + ":" + secondsString;
+
+            yield return new WaitForSeconds(1);
+        }
+    }
+
+    public void StopTime()
+    {
+        running = false;
+    }
+
+    public void StartTime()
+    {
+        running = true;
+    }
 
     private void CheckForBuildingButtons(Vector2 pos)
     {
@@ -158,5 +203,29 @@ public class GameManager : MonoBehaviour
         float randX = Random.Range(minX + 1, maxX - 1);
         float randY = Random.Range(minY + 1, maxY - 1);
         return new Vector2(randX, randY);
+    }
+
+    public bool BuySomething(string resource, int cost)
+    {
+        //resource can be: wood, coin
+        switch (resource)
+        {
+            case "wood":
+                if(cost <= GetComponent<PrehistoricManager>().wood)
+                {
+                    GetComponent<PrehistoricManager>().ChangeWood(-cost);
+                    return true;
+                }
+                break;
+
+            case "coin":
+                if(cost <= GetComponent<PrehistoricManager>().coins)
+                {
+                    GetComponent<PrehistoricManager>().ChangeCoins(-cost);
+                    return true;
+                }
+                break;
+        }
+        return false;
     }
 }

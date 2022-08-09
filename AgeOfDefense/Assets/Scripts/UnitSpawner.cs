@@ -10,20 +10,22 @@ public class UnitSpawner : Building
     public float[] unitQueueWait;
     private Queue<GameObject> unitQueue = new Queue<GameObject>();
     private PrehistoricManager manager;
+    private GameManager mainManager;
     private Slider queueSlider;
     private float queueWaitTimer;
     private bool queueStarted = false;
     private int currentUnitIndex;
 
-    private void Start()
+    public override void Start()
     {
         base.Start();
         queueSlider = transform.Find("Canvas/QueueSlider").gameObject.GetComponent<Slider>();
         manager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<PrehistoricManager>();
+        mainManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
         queueSlider.gameObject.SetActive(false);
     }
 
-    private void Update()
+    public override void Update()
     {
         base.Update();
 
@@ -42,9 +44,8 @@ public class UnitSpawner : Building
 
     public void BuyUnit(int index) 
     {
-        if (unitCosts[index] <= manager.GetCoins())
+        if (mainManager.BuySomething("coin", unitCosts[index]))
         {
-            manager.ChangeCoins(-unitCosts[index]);
             unitQueue.Enqueue(units[index]);
             queueStarted = true;
             if (unitQueue.Count == 1)

@@ -12,12 +12,12 @@ public class Ranged : Unit
 
     private float currentProjectileSpeed;
 
-    private void Start()
+    public override void Start()
     {
         currentProjectileSpeed = maxProjectileSpeed;
         base.Start();
     }
-    private void Update()
+    public override void Update()
     {
         base.Update();
     }

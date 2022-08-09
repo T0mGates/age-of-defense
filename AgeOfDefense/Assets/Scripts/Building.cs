@@ -12,7 +12,8 @@ public class Building : MonoBehaviour
     protected List<GameObject> aggrodBy = new List<GameObject>();
     private Color originalColor;
     protected GameObject buttons;
-    public void Start()
+
+    public virtual void Start()
     {
         originalColor = GetComponent<SpriteRenderer>().color;
         slider = transform.Find("Canvas/Slider").gameObject.GetComponent<Slider>();
@@ -23,7 +24,7 @@ public class Building : MonoBehaviour
     }
 
     // Update is called once per frame
-    public void Update()
+    public virtual void Update()
     {
         
     }
@@ -84,7 +85,7 @@ public class Building : MonoBehaviour
         aggrodBy.Remove(obj);
     }
 
-    public void Die()
+    public virtual void Die()
     {
         for (int i = 0; i < defending.Count; i++)
         {

@@ -30,6 +30,4 @@ public class PrehistoricManager : MonoBehaviour
         wood += change;
         woodTxt.text = "Wood: " + wood;
     }
-
-    public int GetCoins() { return coins; }
 }

@@ -50,7 +50,7 @@ GameObject:
   - component: {fileID: 3387246579193988455}
   - component: {fileID: 5292282761486571364}
   m_Layer: 0
-  m_Name: BuySlingshotter
+  m_Name: BuyClubman
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -467,7 +467,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Buy (2G)
+  m_text: Buy (1G)
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -1046,7 +1046,7 @@ GameObject:
   - component: {fileID: 7958361404773269101}
   - component: {fileID: 2465355332201013387}
   m_Layer: 0
-  m_Name: RangedHut
+  m_Name: MeleeHut
   m_TagString: Building
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1110,7 +1110,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  m_Color: {r: 0.9712542, g: 1, b: 0.5707547, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -1181,10 +1181,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHealth: 10
   units:
-  - {fileID: 6272301333776920829, guid: 46f1ef91e7782fd41aa49e90d642a4e0, type: 3}
-  unitCosts: 02000000
+  - {fileID: 6272301333776920829, guid: 72286e9bdad137043a453b3880cc086e, type: 3}
+  unitCosts: 01000000
   unitQueueWait:
-  - 5
+  - 3
 --- !u!1 &8785093104371913659
 GameObject:
   m_ObjectHideFlags: 0

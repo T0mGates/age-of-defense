@@ -32,7 +32,7 @@ public abstract class Unit : MonoBehaviour
     [HideInInspector]
     public bool canMove = true;
     // Start is called before the first frame update
-    public void Start()
+    public virtual void Start()
     {
         gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
         currentHealth = maxHealth;
@@ -48,7 +48,7 @@ public abstract class Unit : MonoBehaviour
     }
 
     // Update is called once per frame
-    public void Update()
+    public virtual void Update()
     {
         if(state == UnitState.Moving)
         {
