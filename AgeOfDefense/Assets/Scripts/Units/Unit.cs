@@ -63,6 +63,7 @@ public abstract class Unit : MonoBehaviour
             }
             if (attackType == AttackType.Melee)
             {
+                //range is hard-coded for now... (1.3f)
                 if (Vector2.Distance(gameObject.transform.position, attacking.transform.position) < 1.3f || attacking.gameObject.tag == "Building")
                 {
                     if (attackTimer < Time.time)
@@ -128,6 +129,7 @@ public abstract class Unit : MonoBehaviour
         float randX = Random.Range(minX, maxX);
         if(attackType == AttackType.Ranged)
         {
+            //ranged enemies will randomly move left or right (a small amount)
             randX = Mathf.Clamp(Random.Range(transform.position.x - 0.75f, transform.position.x + 0.75f), minX, maxX);
         }
         float randY = minY;
@@ -151,6 +153,7 @@ public abstract class Unit : MonoBehaviour
             {
                 if(gameObject.tag == aggro[i].gameObject.tag || (aggro[i].gameObject.tag == "Building" && targetType == TargetType.Building))
                 {
+                    //if you can heal and have a heal target || you can attack buildings and have a building in range 
                     hasPrioTarget = true;
                 }
             }

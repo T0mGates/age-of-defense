@@ -1083,7 +1083,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7f91a6d6d20c9b447b739924a6cef463, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spawnInterval: 1
+  spawnInterval: 5
   enemies:
   - {fileID: 4443553865725882913, guid: d0ed21aa109ab414497a59d1e60bf422, type: 3}
   - {fileID: 6272301333776920829, guid: f2ec74e0f3405174ba391ebfcdce835f, type: 3}

@@ -205,12 +205,12 @@ public class GameManager : MonoBehaviour
         return new Vector2(randX, randY);
     }
 
-    public bool BuySomething(string resource, int cost)
+    public bool BuySomething(Resource resource, int cost)
     {
         //resource can be: wood, coin
         switch (resource)
         {
-            case "wood":
+            case Resource.Wood:
                 if(cost <= GetComponent<PrehistoricManager>().wood)
                 {
                     GetComponent<PrehistoricManager>().ChangeWood(-cost);
@@ -218,7 +218,7 @@ public class GameManager : MonoBehaviour
                 }
                 break;
 
-            case "coin":
+            case Resource.Coin:
                 if(cost <= GetComponent<PrehistoricManager>().coins)
                 {
                     GetComponent<PrehistoricManager>().ChangeCoins(-cost);

@@ -19,7 +19,7 @@ public class ResourceGenerator : Building
     private PrehistoricManager manager;
     private GameManager mainManager;
 
-    [Header("+Resource | -Resource/s")]
+    [Header("+Resource | -TimeToGain")]
     public int[] costs;
 
     private Slider queueSlider;
@@ -79,14 +79,14 @@ public class ResourceGenerator : Building
 
     public void BuyCoinsGained()
     {
-        if(mainManager.BuySomething("wood", costs[0])){
+        if(mainManager.BuySomething(Resource.Wood, costs[0])){
             coinsGainedOnInterval += 1;
         }
     }
 
     public void BuyCoinsInterval()
     {
-        if (mainManager.BuySomething("wood", costs[1]))
+        if (mainManager.BuySomething(Resource.Wood, costs[1]))
         {
             coinGainInterval -= 1;
             if(coinGainInterval == 1)
@@ -98,7 +98,7 @@ public class ResourceGenerator : Building
 
     public void BuyWoodGained()
     {
-        if (mainManager.BuySomething("coin", costs[0]))
+        if (mainManager.BuySomething(Resource.Coin, costs[0]))
         {
             woodGainedOnInterval += 1;
         }
@@ -106,7 +106,7 @@ public class ResourceGenerator : Building
 
     public void BuyWoodInterval()
     {
-        if (mainManager.BuySomething("coin", costs[1]))
+        if (mainManager.BuySomething(Resource.Coin, costs[1]))
         {
             woodGainInterval -= 1;
             if (woodGainInterval == 1)

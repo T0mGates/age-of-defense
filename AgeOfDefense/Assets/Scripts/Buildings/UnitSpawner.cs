@@ -44,7 +44,7 @@ public class UnitSpawner : Building
 
     public void BuyUnit(int index) 
     {
-        if (mainManager.BuySomething("coin", unitCosts[index]))
+        if (mainManager.BuySomething(Resource.Coin, unitCosts[index]))
         {
             unitQueue.Enqueue(units[index]);
             queueStarted = true;
